@@ -1,0 +1,76 @@
+buildscript {
+    ext {
+        springBootVersion = '2.2.4.RELEASE'
+        lombokVersion = '1.18.20'
+    }
+    repositories {
+        maven {
+            credentials {
+                username artifactoryUser
+                password artifactoryPassword
+            }
+            url uri(artifactoryUrl)
+        }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.springframework.boot'
+
+repositories {
+    maven {
+        credentials {
+            username artifactoryUser
+            password artifactoryPassword
+        }
+        url uri(artifactoryUrl)
+    }
+}
+
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
+String buildAppVersion = project.findProperty('appVersion') ?: '1.0-SNAPSHOT'
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Hoxton.SR1'
+    }
+}
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'commons-io:commons-io:2.11.0'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // lombok
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+
+}
+
+group = 'proof'
+
+bootJar {
+    archiveBaseName = 'proof-demo'
+    archiveVersion = buildAppVersion
+    into 'config', {
+        from 'config'
+    }
+}
+
+
+test {
+    useJUnitPlatform()
+}
+
+
